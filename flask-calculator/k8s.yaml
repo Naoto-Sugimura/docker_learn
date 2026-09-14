@@ -1,0 +1,35 @@
+# 1. コンテナの起動設定（Deployment）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-calc-deployment
+spec:
+  replicas: 2 # ここで「コンテナを2つ同時に動かす」と指定
+  selector:
+    matchLabels:
+      app: flask-calc
+  template:
+    metadata:
+      labels:
+        app: flask-calc
+    spec:
+      containers:
+      - name: flask-calc-container
+        image: flask-calc:latest
+        imagePullPolicy: IfNotPresent # ★重要: ネットから探さずPC内のイメージを使う指示
+        ports:
+        - containerPort: 5000
+
+---
+# 2. 通信の受付・振り分け設定（Service）
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-calc-service
+spec:
+  type: LoadBalancer # アクセスを受け付けて、2つのコンテナに振り分ける
+  selector:
+    app: flask-calc
+  ports:
+  - port: 5000
+    targetPort: 5000
